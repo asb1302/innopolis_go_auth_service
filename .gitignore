@@ -1,2 +1,4 @@
 users.json
 tokens.json
+.env
+requests.http
