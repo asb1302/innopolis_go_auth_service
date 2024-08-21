@@ -4,6 +4,10 @@ PORT=18000
 .PHONY: default
 default: build up
 
+.PHONY: swagger
+swagger:
+	docker run --rm -v $(PWD):/app -w /app golang:1.22.1-alpine sh -c "go install github.com/swaggo/swag/cmd/swag@latest && swag init -g cmd/main.go -o ./docs"
+
 .PHONY: build
 build:
 	docker-compose build
@@ -43,3 +47,6 @@ check:
 		echo "Service is not accessible on port $(PORT)."; \
 		exit 1; \
 	fi
+
+.PHONY: update-docs
+update-docs: swagger build up

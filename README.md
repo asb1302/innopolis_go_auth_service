@@ -15,6 +15,7 @@
 
 * Актуальный адрес прода: https://innopolisgoauthservice-production.up.railway.app/ping
 * Актуальный адрес телеграм бота: [@innopolisGoAuthServiceAsb1302Bot](https://t.me/innopolisGoAuthServiceAsb1302Bot)
+* Адрес документации: https://innopolisgoauthservice-production.up.railway.app/swagger
 
 ## Регистрация нового пользователя
 
@@ -70,6 +71,7 @@ Content-Type: application/json
   "telegram_username": "<укажите логин телеграм без @>"
 }
 ```
+
 ```curl
 curl -X POST https://innopolisgoauthservice-production.up.railway.app/bind_telegram \
   -H "User-ID: <укажите user id из ответа эндпоинта /sign_in>" \
@@ -110,6 +112,7 @@ Content-Type: application/json
   "code": "<код из сообщения бота>"
 }
 ```
+
 ```curl
 curl -X POST https://innopolisgoauthservice-production.up.railway.app/confirm_telegram_code \
   -H "Content-Type: application/json" \
@@ -174,3 +177,27 @@ make check
 ### Примечание
 
 Убедитесь, что вы настроили переменные окружения(.env) перед запуском команд.
+
+## Генерация Swagger-документации
+
+### Использование Docker для генерации документации
+
+Для генерации Swagger-документации в проекте используется Docker-образ golang:1.22.1-alpine. Это позволяет избежать
+установки утилиты swag на локальную машину и использовать Docker для генерации документации.
+
+#### Шаги для генерации документации:
+
+1. Убедитесь, что Docker установлен и запущен на вашей машине.
+2. Используйте команду `make swagger` для генерации документации:
+
+    Эта команда выполнит следующие действия:
+    
+    * Запустит контейнер на основе образа golang:1.22.1-alpine.
+    * В контейнере будет установлена утилита swag.
+    * Документация будет сгенерирована на основе комментариев в коде и сохранена в папке docs.
+
+3. После успешной генерации документации вы можете пересобрать и перезапустить контейнеры с обновленной документацией, используя команду:
+
+```bash
+make update-docs
+```

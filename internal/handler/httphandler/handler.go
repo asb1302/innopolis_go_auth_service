@@ -1,9 +1,11 @@
 package httphandler
 
 import (
+	_ "authservice/docs"
 	"authservice/internal/domain"
 	"authservice/internal/service"
 	"errors"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 )
@@ -29,6 +31,9 @@ func NewRouter() *http.ServeMux {
 	router.Handle("/bind_telegram", CORS(Auth(LogUser(http.HandlerFunc(BindTelegramBot)))))
 	router.Handle("/login_with_telegram", CORS(LogUser(http.HandlerFunc(LoginWithTelegram))))
 	router.Handle("/confirm_telegram_code", CORS(LogUser(http.HandlerFunc(ConfirmTelegramCode))))
+
+	// Swagger handler
+	router.Handle("/swagger/", httpSwagger.WrapHandler)
 
 	return router
 }
