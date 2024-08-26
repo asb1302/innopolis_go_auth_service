@@ -1,0 +1,451 @@
+definitions:
+  domain.LoginPassword:
+    properties:
+      login:
+        type: string
+      password:
+        type: string
+    type: object
+  domain.User:
+    properties:
+      auth_code:
+        type: string
+      auth_code_time:
+        type: integer
+      id:
+        type: string
+      login:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      role:
+        type: string
+      telegram_chat_id:
+        type: integer
+      telegram_username:
+        type: string
+    type: object
+  domain.UserInfo:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      telegram_user_chat_id:
+        type: integer
+      telegram_username:
+        type: string
+    type: object
+  httphandler.BindTelegramData:
+    properties:
+      telegram_username:
+        type: string
+      user_id:
+        type: string
+    type: object
+  httphandler.ChangePswReq:
+    properties:
+      password:
+        type: string
+    type: object
+  httphandler.ConfirmTelegramCodeData:
+    properties:
+      code:
+        type: string
+      telegram_username:
+        type: string
+    type: object
+  httphandler.HTTPResponse:
+    properties:
+      data: {}
+      error:
+        type: string
+      success:
+        type: boolean
+    type: object
+  httphandler.LoginWithTelegramData:
+    properties:
+      telegram_username:
+        type: string
+    type: object
+  httphandler.SetUserInfoReq:
+    properties:
+      name:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /admin/get_user_info:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает полную информацию о пользователе по его ID. Доступно
+        только для администраторов.
+      parameters:
+      - description: ID пользователя
+        in: header
+        name: User-ID
+        required: true
+        type: string
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Полная информация о пользователе
+          schema:
+            $ref: '#/definitions/domain.User'
+        "400":
+          description: Неверный запрос
+          schema:
+            $ref: '#/definitions/httphandler.HTTPResponse'
+        "401":
+          description: Пользователь не авторизован
+          schema:
+            $ref: '#/definitions/httphandler.HTTPResponse'
+        "404":
+          description: Пользователь не найден
+          schema:
+            $ref: '#/definitions/httphandler.HTTPResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Получить информацию о пользователе
+      tags:
+      - admin
+  /bind_telegram:
+    post:
+      consumes:
+      - application/json
+      description: Привязывает Telegram username к пользователю.
+      parameters:
+      - description: Данные Telegram
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/httphandler.BindTelegramData'
+      - description: ID пользователя
+        in: header
+        name: User-ID
+        required: true
+        type: string
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Telegram username успешно привязан
+          schema:
+            $ref: '#/definitions/httphandler.HTTPResponse'
+        "400":
+          description: Неправильные входные данные
+          schema:
+            $ref: '#/definitions/httphandler.HTTPResponse'
+        "401":
+          description: Неавторизованный запрос
+          schema:
+            $ref: '#/definitions/httphandler.HTTPResponse'
+        "500":
+          description: Ошибка сервера
+          schema:
+            $ref: '#/definitions/httphandler.HTTPResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Привязать Telegram-бота
+      tags:
+      - telegram
+  /change_psw:
+    put:
+      consumes:
+      - application/json
+      description: Изменяет пароль пользователя.
+      parameters:
+      - description: Новый пароль пользователя
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/httphandler.ChangePswReq'
+      - description: ID пользователя
+        in: header
+        name: User-ID
+        required: true
+        type: string
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Пароль успешно изменен
+          schema:
+            $ref: '#/definitions/httphandler.HTTPResponse'
+        "400":
+          description: Неправильные входные данные
+          schema:
+            $ref: '#/definitions/httphandler.HTTPResponse'
+        "401":
+          description: Пользователь не авторизован
+          schema:
+            $ref: '#/definitions/httphandler.HTTPResponse'
+        "404":
+          description: Пользователь не найден
+          schema:
+            $ref: '#/definitions/httphandler.HTTPResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Изменить пароль
+      tags:
+      - users
+  /confirm_telegram_code:
+    post:
+      consumes:
+      - application/json
+      description: Подтверждает код авторизации из Telegram и возвращает токен.
+      parameters:
+      - description: Telegram username и код
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/httphandler.ConfirmTelegramCodeData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Токен пользователя
+          schema:
+            allOf:
+            - $ref: '#/definitions/httphandler.HTTPResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "400":
+          description: Неправильные входные данные
+          schema:
+            $ref: '#/definitions/httphandler.HTTPResponse'
+        "401":
+          description: Неверный код авторизации
+          schema:
+            $ref: '#/definitions/httphandler.HTTPResponse'
+      summary: Подтверждение кода Telegram
+      tags:
+      - telegram
+  /get_user_info:
+    get:
+      description: Возвращает короткую информацию о пользователе на основе его ID.
+      parameters:
+      - description: ID пользователя
+        in: header
+        name: User-ID
+        required: true
+        type: string
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Информация о пользователе
+          schema:
+            allOf:
+            - $ref: '#/definitions/httphandler.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/domain.UserInfo'
+              type: object
+        "401":
+          description: Пользователь не авторизован
+          schema:
+            $ref: '#/definitions/httphandler.HTTPResponse'
+        "404":
+          description: Пользователь не найден
+          schema:
+            $ref: '#/definitions/httphandler.HTTPResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Получить информацию о пользователе
+      tags:
+      - users
+  /login_with_telegram:
+    post:
+      consumes:
+      - application/json
+      description: Отправляет код авторизации в Telegram чат пользователя.
+      parameters:
+      - description: Telegram username
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/httphandler.LoginWithTelegramData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Код отправлен в Telegram чат
+          schema:
+            $ref: '#/definitions/httphandler.HTTPResponse'
+        "400":
+          description: Неправильные входные данные
+          schema:
+            $ref: '#/definitions/httphandler.HTTPResponse'
+        "422":
+          description: Ошибка валидации
+          schema:
+            $ref: '#/definitions/httphandler.HTTPResponse'
+        "500":
+          description: Ошибка сервера
+          schema:
+            $ref: '#/definitions/httphandler.HTTPResponse'
+      summary: Вход с помощью Telegram
+      tags:
+      - telegram
+  /ping:
+    get:
+      description: Простая проверка доступности сервиса. Возвращает строку "pong".
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: pong
+          schema:
+            type: string
+      summary: Пинг-сервис
+      tags:
+      - health
+  /set_user_info:
+    put:
+      consumes:
+      - application/json
+      description: Обновляет информацию о пользователе (имя).
+      parameters:
+      - description: Информация о пользователе
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/httphandler.SetUserInfoReq'
+      - description: ID пользователя
+        in: header
+        name: User-ID
+        required: true
+        type: string
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Информация успешно обновлена
+          schema:
+            $ref: '#/definitions/httphandler.HTTPResponse'
+        "400":
+          description: Неправильные входные данные
+          schema:
+            $ref: '#/definitions/httphandler.HTTPResponse'
+        "401":
+          description: Пользователь не авторизован
+          schema:
+            $ref: '#/definitions/httphandler.HTTPResponse'
+        "404":
+          description: Пользователь не найден
+          schema:
+            $ref: '#/definitions/httphandler.HTTPResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Обновить информацию о пользователе
+      tags:
+      - users
+  /sign_in:
+    post:
+      consumes:
+      - application/json
+      description: Авторизует пользователя и возвращает токен.
+      parameters:
+      - description: Логин и пароль
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/domain.LoginPassword'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Токен пользователя
+          schema:
+            allOf:
+            - $ref: '#/definitions/httphandler.HTTPResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "400":
+          description: Неправильные входные данные
+          schema:
+            $ref: '#/definitions/httphandler.HTTPResponse'
+        "404":
+          description: Пользователь не найден
+          schema:
+            $ref: '#/definitions/httphandler.HTTPResponse'
+      summary: Авторизация пользователя
+      tags:
+      - auth
+  /sign_up:
+    post:
+      consumes:
+      - application/json
+      description: Регистрирует нового пользователя и возвращает токен.
+      parameters:
+      - description: Логин и пароль
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/domain.LoginPassword'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Токен пользователя
+          schema:
+            allOf:
+            - $ref: '#/definitions/httphandler.HTTPResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "400":
+          description: Неправильные входные данные
+          schema:
+            $ref: '#/definitions/httphandler.HTTPResponse'
+        "409":
+          description: Пользователь уже существует
+          schema:
+            $ref: '#/definitions/httphandler.HTTPResponse'
+      summary: Регистрация пользователя
+      tags:
+      - auth
+swagger: "2.0"

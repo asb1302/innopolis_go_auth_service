@@ -9,4 +9,5 @@ type DB interface {
 	CheckExistLogin(login string) (*primitive.ObjectID, bool)
 	GetUser(id primitive.ObjectID) (*domain.User, error)
 	SetUser(user *domain.User) error
+	GetUserByTelegramUsername(username string) (*domain.User, error)
 }
